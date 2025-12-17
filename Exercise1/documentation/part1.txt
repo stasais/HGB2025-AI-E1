@@ -1,0 +1,113 @@
+stas@air Exercise1 % cd ./data/
+stas@air data % python3 ./expand.py
+Generated 1,000,000 rows -> people_1M.csv
+stas@air data % wc -l ./people_1M.csv          
+ 1000001 ./people_1M.csv
+stas@air data % docker exec -it pg-bigdata psql -U postgres
+psql (15.15 (Debian 15.15-1.pgdg13+1))
+Type "help" for help.
+
+postgres=# DROP TABLE IF EXISTS people_big;
+
+CREATE TABLE people_big (
+  id SERIAL PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  gender TEXT,
+  department TEXT,
+  salary INTEGER,
+  country TEXT
+);
+
+\COPY people_big(first_name,last_name,gender,department,salary,country)
+FROM '/data/people_1M.csv' DELIMITER ',' CSV HEADER;
+NOTICE:  table "people_big" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+COPY 1000000
+postgres=# \timing on
+Timing is on.
+postgres=# SELECT COUNT(*) FROM people_big;
+SELECT * FROM people_big LIMIT 10;
+  count  
+---------
+ 1000000
+(1 row)
+
+Time: 38.579 ms
+ id | first_name | last_name | gender |     department     | salary |   country    
+----+------------+-----------+--------+--------------------+--------+--------------
+  1 | Andreas    | Scott     | Male   | Audit              |  69144 | Bosnia
+  2 | Tim        | Lopez     | Male   | Energy Management  |  62082 | Taiwan
+  3 | David      | Ramirez   | Male   | Quality Assurance  |  99453 | South Africa
+  4 | Victor     | Sanchez   | Male   | Level Design       |  95713 | Cuba
+  5 | Lea        | Edwards   | Female | Energy Management  |  60425 | Iceland
+  6 | Oliver     | Baker     | Male   | Payroll            |  74110 | Poland
+  7 | Emily      | Lopez     | Female | SOC                |  83526 | Netherlands
+  8 | Tania      | King      | Female | IT                 |  95142 | Thailand
+  9 | Max        | Hernandez | Male   | Workforce Planning | 101198 | Latvia
+ 10 | Juliana    | Harris    | Female | Compliance         | 103336 | Chile
+(10 rows)
+
+Time: 0.259 ms
+postgres=# SELECT department, AVG(salary)
+FROM people_big
+GROUP BY department
+LIMIT 10;
+      department       |         avg         
+-----------------------+---------------------
+ Accounting            |  85150.560834888851
+ Alliances             |  84864.832756437315
+ Analytics             | 122363.321232406454
+ API                   |  84799.041690986409
+ Audit                 |  84982.559610499577
+ Backend               |  84982.349086542585
+ Billing               |  84928.436430727944
+ Bioinformatics        |  85138.080510264425
+ Brand                 |  85086.881434454358
+ Business Intelligence |  85127.097446808511
+(10 rows)
+
+Time: 174.144 ms
+postgres=# SELECT country, AVG(avg_salary)
+FROM (
+  SELECT country, department, AVG(salary) AS avg_salary
+  FROM people_big
+  GROUP BY country, department
+) sub
+GROUP BY country
+LIMIT 10;
+  country   |        avg         
+------------+--------------------
+ Algeria    | 87230.382040504578
+ Argentina  | 86969.866763623360
+ Armenia    | 87245.059590528218
+ Australia  | 87056.715662987876
+ Austria    | 87127.824046597584
+ Bangladesh | 87063.832793583033
+ Belgium    | 86940.103641985310
+ Bolivia    | 86960.615658334041
+ Bosnia     | 87102.274664951815
+ Brazil     | 86977.731228862018
+(10 rows)
+
+Time: 186.149 ms
+postgres=# SELECT *
+FROM people_big
+ORDER BY salary DESC
+LIMIT 10;
+   id   | first_name | last_name | gender |    department    | salary |   country    
+--------+------------+-----------+--------+------------------+--------+--------------
+ 764650 | Tim        | Jensen    | Male   | Analytics        | 160000 | Bulgaria
+  10016 | Anastasia  | Edwards   | Female | Analytics        | 159998 | Kuwait
+ 754528 | Adrian     | Young     | Male   | Game Analytics   | 159997 | UK
+ 893472 | Mariana    | Cook      | Female | People Analytics | 159995 | South Africa
+ 240511 | Diego      | Lopez     | Male   | Game Analytics   | 159995 | Malaysia
+ 359891 | Mariana    | Novak     | Female | Game Analytics   | 159992 | Mexico
+  53102 | Felix      | Taylor    | Male   | Data Science     | 159989 | Bosnia
+ 768143 | Teresa     | Campbell  | Female | Game Analytics   | 159988 | Spain
+ 729165 | Antonio    | Weber     | Male   | Analytics        | 159987 | Moldova
+ 952549 | Adrian     | Harris    | Male   | Analytics        | 159986 | Georgia
+(10 rows)
+
+Time: 43.468 ms
