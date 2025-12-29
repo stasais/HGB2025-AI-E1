@@ -1,4 +1,6 @@
-# Stasnislav Buinitskii - Solution for SDB Exercise 1
+# Stanislav Buinitskii - Solution for SDB Exercise 1
+
+Repository: [https://github.com/stasais/HGB2025-AI-E1/tree/exercise_1_done](https://github.com/stasais/HGB2025-AI-E1/tree/exercise_1_done)
 
 ## Part 2 Exercise 1 - PostgreSQL Analytical Queries (E-commerce)
 
