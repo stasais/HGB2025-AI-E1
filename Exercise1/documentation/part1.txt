@@ -1,9 +1,44 @@
-stas@air Exercise1 % cd ./data/
-stas@air data % python3 ./expand.py
-Generated 1,000,000 rows -> people_1M.csv
-stas@air data % wc -l ./people_1M.csv          
- 1000001 ./people_1M.csv
-stas@air data % docker exec -it pg-bigdata psql -U postgres
+
+
+ Alliances             | 1005223944
+ Analytics             | 1425777419
+ API                   | 1016994907
+ Audit                 | 1003644029
+ Backend               |  990809208
+ Billing               | 1012686676
+ Bioinformatics        | 1007779459
+ Brand                 |  991772690
+ Business Intelligence | 1000243395
+(10 rows)
+
+Time: 94.413 ms
+postgres=# SELECT *
+FROM people_big
+ORDER BY salary DESC
+LIMIT 10;
+   id   | first_name | last_name | gender |    department    | salary |   country    
+--------+------------+-----------+--------+------------------+--------+--------------
+ 764650 | Tim        | Jensen    | Male   | Analytics        | 160000 | Bulgaria
+  10016 | Anastasia  | Edwards   | Female | Analytics        | 159998 | Kuwait
+ 754528 | Adrian     | Young     | Male   | Game Analytics   | 159997 | UK
+ 893472 | Mariana    | Cook      | Female | People Analytics | 159995 | South Africa
+ 240511 | Diego      | Lopez     | Male   | Game Analytics   | 159995 | Malaysia
+ 359891 | Mariana    | Novak     | Female | Game Analytics   | 159992 | Mexico
+  53102 | Felix      | Taylor    | Male   | Data Science     | 159989 | Bosnia
+ 768143 | Teresa     | Campbell  | Female | Game Analytics   | 159988 | Spain
+ 729165 | Antonio    | Weber     | Male   | Analytics        | 159987 | Moldova
+ 952549 | Adrian     | Harris    | Male   | Analytics        | 159986 | Georgia
+(10 rows)
+
+Time: 87.844 ms
+postgres=# exit
+(hgb2025-ai-e1) stas@air HGB2025-AI-E1 % docker exec -it pg-bigdata psql -U postgres
+psql (15.15 (Debian 15.15-1.pgdg13+1))
+Type "help" for help.
+
+postgres=# exit
+(hgb2025-ai-e1) stas@air HGB2025-AI-E1 % clear
+(hgb2025-ai-e1) stas@air HGB2025-AI-E1 % docker exec -it pg-bigdata psql -U postgres                       
 psql (15.15 (Debian 15.15-1.pgdg13+1))
 Type "help" for help.
 
@@ -21,7 +56,6 @@ CREATE TABLE people_big (
 
 \COPY people_big(first_name,last_name,gender,department,salary,country)
 FROM '/data/people_1M.csv' DELIMITER ',' CSV HEADER;
-NOTICE:  table "people_big" does not exist, skipping
 DROP TABLE
 CREATE TABLE
 COPY 1000000
@@ -34,7 +68,7 @@ SELECT * FROM people_big LIMIT 10;
  1000000
 (1 row)
 
-Time: 38.579 ms
+Time: 112.492 ms
  id | first_name | last_name | gender |     department     | salary |   country    
 ----+------------+-----------+--------+--------------------+--------+--------------
   1 | Andreas    | Scott     | Male   | Audit              |  69144 | Bosnia
@@ -49,7 +83,7 @@ Time: 38.579 ms
  10 | Juliana    | Harris    | Female | Compliance         | 103336 | Chile
 (10 rows)
 
-Time: 0.259 ms
+Time: 0.285 ms
 postgres=# SELECT department, AVG(salary)
 FROM people_big
 GROUP BY department
@@ -68,7 +102,7 @@ LIMIT 10;
  Business Intelligence |  85127.097446808511
 (10 rows)
 
-Time: 174.144 ms
+Time: 92.830 ms
 postgres=# SELECT country, AVG(avg_salary)
 FROM (
   SELECT country, department, AVG(salary) AS avg_salary
@@ -91,7 +125,7 @@ LIMIT 10;
  Brazil     | 86977.731228862018
 (10 rows)
 
-Time: 186.149 ms
+Time: 1077.899 ms (00:01.078)
 postgres=# SELECT *
 FROM people_big
 ORDER BY salary DESC
@@ -101,8 +135,8 @@ LIMIT 10;
  764650 | Tim        | Jensen    | Male   | Analytics        | 160000 | Bulgaria
   10016 | Anastasia  | Edwards   | Female | Analytics        | 159998 | Kuwait
  754528 | Adrian     | Young     | Male   | Game Analytics   | 159997 | UK
- 893472 | Mariana    | Cook      | Female | People Analytics | 159995 | South Africa
  240511 | Diego      | Lopez     | Male   | Game Analytics   | 159995 | Malaysia
+ 893472 | Mariana    | Cook      | Female | People Analytics | 159995 | South Africa
  359891 | Mariana    | Novak     | Female | Game Analytics   | 159992 | Mexico
   53102 | Felix      | Taylor    | Male   | Data Science     | 159989 | Bosnia
  768143 | Teresa     | Campbell  | Female | Game Analytics   | 159988 | Spain
@@ -110,4 +144,5 @@ LIMIT 10;
  952549 | Adrian     | Harris    | Male   | Analytics        | 159986 | Georgia
 (10 rows)
 
-Time: 43.468 ms
+Time: 109.219 
+

@@ -1,0 +1,172 @@
+part2 ex1 buinitskii
+n    price_per_unit NUMERIC(10, 2),  -- Use NUMERIC for precise decimal handling\n    order_date DATE,\n    country TEXT\n)
+(hgb2025-ai-e1) stas@air ecommerce % docker exec -it pg-bigdata psql -U postgres
+psql (15.15 (Debian 15.15-1.pgdg13+1))
+Type "help" for help.
+
+postgres=# DROP TABLE IF EXISTS orders_big;
+
+CREATE TABLE orders_big (
+    id SERIAL PRIMARY KEY,  -- Optional: Add an auto-incrementing ID for uniqueness
+    customer_name TEXT,
+    product_category TEXT,
+    quantity INTEGER,
+    price_per_unit NUMERIC(10, 2),  -- Use NUMERIC for precise decimal handling
+    order_date DATE,
+    country TEXT
+);
+NOTICE:  table "orders_big" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+postgres=# \COPY orders_big(customer_name, product_category, quantity, price_per_unit, order_date, country)
+FROM '/data/orders_1M.csv' DELIMITER ',' CSV HEADER;
+COPY 1000000
+postgres=# SELECT COUNT(*) FROM orders_big;
+SELECT * FROM orders_big LIMIT 10;
+  count  
+---------
+ 1000000
+(1 row)
+
+ id |  customer_name  | product_category | quantity | price_per_unit | order_date | country 
+----+-----------------+------------------+----------+----------------+------------+---------
+  1 | Lucas Thomas    | Fashion          |        1 |          52.41 | 2024-04-14 | Brazil
+  2 | Victor Williams | Grocery          |        1 |           4.92 | 2024-08-11 | Germany
+  3 | Bob Gonzalez    | Grocery          |        5 |          72.17 | 2025-12-19 | Sweden
+  4 | Zoe Moore       | Health & Beauty  |        2 |         244.73 | 2024-01-07 | India
+  5 | Sara Moore      | Home & Garden    |        4 |          94.63 | 2024-12-10 | Canada
+  6 | Grace Thompson  | Fashion          |        4 |         171.02 | 2025-09-10 | France
+  7 | Henry Harris    | Electronics      |        4 |         210.32 | 2024-10-27 | Japan
+  8 | Noah Jones      | Office Supplies  |        3 |          16.23 | 2024-08-21 | India
+  9 | Emma Davis      | Toys             |        1 |          60.12 | 2025-04-09 | Brazil
+ 10 | Leo Thompson    | Books            |        2 |          20.71 | 2024-09-30 | Mexico
+(10 rows)
+
+postgres=# SELECT * FROM orders_big ORDER BY price_per_unit DESC LIMIT 1;
+   id   | customer_name | product_category | quantity | price_per_unit | order_date | country 
+--------+---------------+------------------+----------+----------------+------------+---------
+ 841292 | Emma Brown    | Automotive       |        3 |        2000.00 | 2024-10-11 | Italy
+(1 row)
+
+postgres=# SELECT product_category, SUM(quantity) AS total_quantity
+FROM orders_big
+GROUP BY product_category
+ORDER BY total_quantity DESC
+LIMIT 3;
+ product_category | total_quantity 
+------------------+----------------
+ Health & Beauty  |         300842
+ Electronics      |         300804
+ Toys             |         300598
+(3 rows)
+
+postgres=# SELECT product_category, SUM(price_per_unit * quantity) AS total_revenue
+FROM orders_big
+GROUP BY product_category
+ORDER BY total_revenue DESC;
+ product_category | total_revenue 
+------------------+---------------
+ Automotive       |  306589798.86
+ Electronics      |  241525009.45
+ Home & Garden    |   78023780.09
+ Sports           |   61848990.83
+ Health & Beauty  |   46599817.89
+ Office Supplies  |   38276061.64
+ Fashion          |   31566368.22
+ Toys             |   23271039.02
+ Grocery          |   15268355.66
+ Books            |   12731976.04
+(10 rows)
+
+postgres=# SELECT customer_name, SUM(price_per_unit * quantity) AS total_spending
+FROM orders_big
+GROUP BY customer_name
+ORDER BY total_spending DESC
+LIMIT 10; 
+ customer_name  | total_spending 
+----------------+----------------
+ Carol Taylor   |      991179.18
+ Nina Lopez     |      975444.95
+ Daniel Jackson |      959344.48
+ Carol Lewis    |      947708.57
+ Daniel Young   |      946030.14
+ Alice Martinez |      935100.02
+ Ethan Perez    |      934841.24
+ Leo Lee        |      934796.48
+ Eve Young      |      933176.86
+ Ivy Rodriguez  |      925742.64
+(10 rows)
+
+postgres=# 
+
+Spark
+=== Loading people_big from PostgreSQL ===
+Rows loaded: 1000000
+Load time: 1.26 seconds
+
+=== Query (a): AVG salary per department ===
++------------------+----------+
+|department        |avg_salary|
++------------------+----------+
+|Workforce Planning|85090.82  |
+|Web Development   |84814.36  |
+|UX Design         |84821.2   |
+|UI Design         |85164.64  |
+|Treasury          |84783.27  |
+|Training          |85148.1   |
+|Tax               |85018.57  |
+|Sustainability    |85178.99  |
+|Supply Chain      |84952.89  |
+|Subscriptions     |84899.19  |
++------------------+----------+
+
+Query (a) time: 1.19 seconds
+
+=== Query (b): Nested aggregation ===
++------------+-----------------+
+|country     |avg_salary       |
++------------+-----------------+
+|Egypt       |87382.229633112  |
+|Kuwait      |87349.3517377211 |
+|Saudi Arabia|87348.80512175433|
+|Panama      |87345.00623707911|
+|Denmark     |87328.03514120901|
+|Jamaica     |87305.437352083  |
+|Lebanon     |87292.76891750695|
+|Turkey      |87290.69043798617|
+|Malaysia    |87253.78746341489|
+|Kazakhstan  |87251.74274968785|
++------------+-----------------+
+
+Query (b) time: 1.02 seconds
+
+=== Query (c): Top 10 salaries ===
++------+----------+---------+------+----------------+------+------------+
+|id    |first_name|last_name|gender|department      |salary|country     |
++------+----------+---------+------+----------------+------+------------+
+|764650|Tim       |Jensen   |Male  |Analytics       |160000|Bulgaria    |
+|10016 |Anastasia |Edwards  |Female|Analytics       |159998|Kuwait      |
+|754528|Adrian    |Young    |Male  |Game Analytics  |159997|UK          |
+|240511|Diego     |Lopez    |Male  |Game Analytics  |159995|Malaysia    |
+|893472|Mariana   |Cook     |Female|People Analytics|159995|South Africa|
+|359891|Mariana   |Novak    |Female|Game Analytics  |159992|Mexico      |
+|53102 |Felix     |Taylor   |Male  |Data Science    |159989|Bosnia      |
+|768143|Teresa    |Campbell |Female|Game Analytics  |159988|Spain       |
+|729165|Antonio   |Weber    |Male  |Analytics       |159987|Moldova     |
+|952549|Adrian    |Harris   |Male  |Analytics       |159986|Georgia     |
++------+----------+---------+------+----------------+------+------------+
+
+Query (c) time: 1.19 seconds
+
+=== Query (d): Heavy self-join COUNT (DANGEROUS) ===
+Join count: 10983941260
+Query (d) time: 6.05 seconds
+
+=== Query (d-safe): Join-equivalent rewrite ===
++-----------+
+|total_pairs|
++-----------+
+|10983941260|
++-----------+
+
+Query (d-safe) time: 0.52 seconds

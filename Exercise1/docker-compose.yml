@@ -10,6 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - pg_big_data:/var/lib/postgresql/data
       - ./data:/data
     cpus: "1.0"
 
@@ -27,3 +28,6 @@ services:
     environment:
       - JUPYTER_TOKEN=lab
     command: start-notebook.sh --NotebookApp.token=lab
+
+volumes:
+  pg_big_data:
