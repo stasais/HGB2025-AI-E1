@@ -1,2 +1,2 @@
-psycopg2-binary
+psycopg[binary]
 kafka-python  # ADDED: Required for Kafka consumer in CDC architecture
