@@ -120,15 +120,36 @@ spark-submit \
   /opt/spark-apps/spark_crash_monitoring.py
 ```
 
-### 5.2 Expected Output
+### 5.2 Actual Output
 ```
 -------------------------------------------
-Batch: X
+Batch: 0
 -------------------------------------------
 +------------------------------------------+---------+-----------+
 |Interval                                  |user_id  |crash_count|
 +------------------------------------------+---------+-----------+
-|{2026-01-27 XX:XX:X0, 2026-01-27 XX:XX:X0}|user_XXXX|N          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1108|3          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1116|3          |
+|{2026-01-27 20:16:30, 2026-01-27 20:16:40}|user_1167|3          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1322|3          |
+|{2026-01-27 20:16:40, 2026-01-27 20:16:50}|user_1247|3          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1334|3          |
+|{2026-01-27 20:16:30, 2026-01-27 20:16:40}|user_1017|3          |
+|{2026-01-27 20:16:30, 2026-01-27 20:16:40}|user_1819|3          |
+|{2026-01-27 20:16:30, 2026-01-27 20:16:40}|user_1684|3          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1019|3          |
+|{2026-01-27 20:16:20, 2026-01-27 20:16:30}|user_1027|3          |
+|{2026-01-27 20:16:30, 2026-01-27 20:16:40}|user_1285|3          |
+|{2026-01-27 20:16:40, 2026-01-27 20:16:50}|user_1266|5          |
++------------------------------------------+---------+-----------+
+
+-------------------------------------------
+Batch: 1
+-------------------------------------------
++------------------------------------------+---------+-----------+
+|Interval                                  |user_id  |crash_count|
++------------------------------------------+---------+-----------+
+|{2026-01-27 20:16:50, 2026-01-27 20:17:00}|user_1552|4          |
 +------------------------------------------+---------+-----------+
 ```
 
@@ -173,11 +194,11 @@ Batch: X
 ## 7. Conclusion
 
 The implementation satisfies all Activity 3 requirements:
-- ✅ Filters for "crash" content (case insensitive)
-- ✅ Filters for "High" or "Critical" severity
-- ✅ Groups by user_id
-- ✅ Uses 10-second tumbling windows on event timestamp
-- ✅ Outputs only when crash_count > 2
-- ✅ Handles late-arriving records via watermarking
-- ✅ Supports horizontal scaling via Spark's distributed architecture
-- ✅ Provides fault tolerance via checkpointing
+- Filters for "crash" content (case insensitive)
+-  Filters for "High" or "Critical" severity
+-  Groups by user_id
+-  Uses 10-second tumbling windows on event timestamp
+-  Outputs only when crash_count > 2
+-  Handles late-arriving records via watermarking
+-  Supports horizontal scaling via Spark's distributed architecture
+-  Provides fault tolerance via checkpointing
